@@ -1,0 +1,72 @@
+# First build: docker-compose run --rm base /scripts/install.sh
+# DB Setup: docker-compose up -d postgres && docker-compose run --rm base setup-database.sh
+
+version: '3.7'
+services:
+  base:
+    image: ghostfolio-base:latest
+    volumes:
+      - ghostfolio-data:/ghostfolio
+      - .env:/ghostfolio/.env:ro
+    env_file: .env
+
+  client:
+    image: ghostfolio-base:latest
+    volumes:
+      - ghostfolio-data:/ghostfolio
+      - .env:/ghostfolio/.env:ro
+      - ./scripts:/scripts:ro
+    env_file: .env
+    command: "/scripts/start-client.sh"
+    restart: unless-stopped
+    depends_on:
+      - "server"
+    ports:
+      - 4200:4200
+
+  server:
+    image: ghostfolio-base:latest
+    volumes:
+      - ghostfolio-data:/ghostfolio
+      - .env:/ghostfolio/.env:ro
+      - ./scripts:/scripts:ro
+    env_file: .env
+    command: "/scripts/start-server.sh"
+    restart: unless-stopped
+    depends_on:
+      - "postgres"
+      - "redis"
+
+  postgres:
+    image: postgres:12
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: 'redis:alpine'
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+volumes:
+  ghostfolio-data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: './ghostfolio-data'
+  postgres-data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: './postgres-data'
+  redis-data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: './redis-data'
