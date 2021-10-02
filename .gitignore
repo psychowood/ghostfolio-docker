@@ -1,0 +1,4 @@
+ghostfolio-data/*
+postgres-data/*
+redis-data/*
+*.DS_Store
