@@ -576,10 +576,9 @@ Stopping ghostfolio_postgres_1 ... done
 
 </details>
 
-At this point, ghostfolio is ready to go and you can start it as usual using `docker-compose up -d` and, after a while, you'll be able to reach ghostfolio app @ http://yourdockerhost:4200
-
 <details>
-<summary> If you want to monitor the startup sequence you can run <code>docker-compose logs -f</code></summary>
+<summary> 5. At this point, ghostfolio is ready to go and you can start it as usual using <code>docker-compose up -d</code> and, after a while, you'll be able to reach ghostfolio app @ http://yourdockerhost:4200 .
+</summary><p>If you want to monitor the startup sequence you can run <code>docker-compose logs -f</code>
 
 ```vb
 rancher@burmilla:/mnt/containers/ghostfolio-docker$ docker-compose up -d
@@ -805,5 +804,14 @@ client_1    |
 client_1    |
 client_1    | ✔ Compiled successfully.
 ```
-
 </details>
+
+You can then follow the last steps from Ghostfolio setup:
+
+ 6. Login as _Admin_ with the following _Security Token_: `ae76872ae8f3419c6d6f64bf51888ecbcc703927a342d815fafe486acdb938da07d0cf44fca211a0be74a423238f535362d390a41e81e633a9ce668a6e31cdf9`
+
+ 7. Go to the _Admin Control Panel_ and click _Gather All Data_ to fetch historical data
+
+ 8. Click _Sign out_ and check out the _Live Demo_
+ 
+ Enjoy and invest responsibly :)
