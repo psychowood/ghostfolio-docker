@@ -1,6 +1,3 @@
-# First build: docker-compose run --rm base /scripts/install.sh
-# DB Setup: docker-compose up -d postgres && docker-compose run --rm base setup-database.sh
-
 version: '3.7'
 services:
   base:
@@ -59,14 +56,4 @@ volumes:
       o: 'bind'
       device: './ghostfolio-data'
   postgres-data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: './postgres-data'
   redis-data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: './redis-data'
