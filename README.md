@@ -7,7 +7,7 @@ Imho it is a very nice and promising project, and deserves to be looked upon.
 
 ## Why?
 
-While Ghostfolio [setup](https://github.com/ghostfolio/ghostfolio#getting-started) is quite straighforward and well documented, it has different drawbacks for someone - like me - that wants to really selfhost it in a docker environment. 
+While Ghostfolio [setup](https://github.com/ghostfolio/ghostfolio#getting-started) is quite straighforward and well documented, it has different drawbacks for someone - like me - that wants to really selfhost it in a docker headless environment. 
 
 The official setup
 - requires a bunch of dependencies to be installed locally (Node.js, Yarn)
@@ -19,7 +19,19 @@ So yes, you need docker-compose installed.
 
 ## What about this project?
 
-This repository contains just scripts and configuration files. If you want to run ghostfolio in a docker container, you can set it up following these steps:
+This repository contains just scripts and configuration files, if you look inside everything is quite self-explanatory. 
+
+Some notes about my choices, in case you were wondering:
+
+- The ghostfolio-base container will not run, it will start then stop. This is normal, it's used as a base to run the setup scripts (steps 3 and 4). It could be replaced with a longer docker run command including all the volume mappings needed, but I find it cleaner cleaner having everything in a compose file 
+- The base, server and client containers could probably be distributed as docker images. Maybe in the future, if the official team will not release an official image
+- The compose file uses a local directory for ghostfolio-data instead of using a standard volume: this way it is easier to edit/patch/check files in case of errors. If you want to use a standard volume instead, you can edit the docker-compose.yml file removing the driver* sections
+- This project is developed and tested on [BurmillaOS](https://burmillaos.org/)
+- The default UID and GID are 1100:1100
+
+## Enough said, I want to run it!
+
+You can set it up following these steps:
 
 <details>
 <summary> 1. <code>git clone</code> this repo in a folder of your choice inside your docker host.</summary><p>
@@ -62,115 +74,68 @@ to create the *ghostfolio-base* tagged image that will be used to install and ru
 
 ```vb
 rancher@burmilla:/mnt/containers/ghostfolio-docker$ docker build -t ghostfolio-base .
-Sending build context to Docker daemon  124.9kB
+Sending build context to Docker daemon  270.8kB
 Step 1/19 : FROM node:14-alpine3.14
-14-alpine3.14: Pulling from library/node
-a0d0a0d46f8b: Already exists
-fbe6ba64b82d: Pull complete
-e74fed69a764: Pull complete
-7daec1603a24: Pull complete
-Digest: sha256:44c20bf102dcdd99e9753757f1b1a7a6c8c4da4107f4dc8171969fda06d7c4c9
-Status: Downloaded newer image for node:14-alpine3.14
  ---> 07c1d305fe0a
 Step 2/19 : RUN apk --no-cache add curl xdg-utils
- ---> Running in a152fb3d5d68
-fetch https://dl-cdn.alpinelinux.org/alpine/v3.14/main/x86_64/APKINDEX.tar.gz
-fetch https://dl-cdn.alpinelinux.org/alpine/v3.14/community/x86_64/APKINDEX.tar.gz
-(1/20) Installing ca-certificates (20191127-r5)
-(2/20) Installing brotli-libs (1.0.9-r5)
-(3/20) Installing nghttp2-libs (1.43.0-r0)
-(4/20) Installing libcurl (7.79.1-r0)
-(5/20) Installing curl (7.79.1-r0)
-(6/20) Installing libxau (1.0.9-r0)
-(7/20) Installing libmd (1.0.3-r0)
-(8/20) Installing libbsd (0.11.3-r0)
-(9/20) Installing libxdmcp (1.1.3-r0)
-(10/20) Installing libxcb (1.14-r2)
-(11/20) Installing libx11 (1.7.2-r0)
-(12/20) Installing libxext (1.3.4-r0)
-(13/20) Installing libice (1.0.10-r0)
-(14/20) Installing libuuid (2.37-r0)
-(15/20) Installing libsm (1.2.3-r0)
-(16/20) Installing libxt (1.2.1-r0)
-(17/20) Installing libxmu (1.1.3-r0)
-(18/20) Installing xset (1.2.4-r0)
-(19/20) Installing xprop (1.2.5-r0)
-(20/20) Installing xdg-utils (1.1.3-r0)
-Executing busybox-1.33.1-r3.trigger
-Executing ca-certificates-20191127-r5.trigger
-OK: 15 MiB in 36 packages
-Removing intermediate container a152fb3d5d68
- ---> 990a2d8b9bc7
+ ---> Using cache
+ ---> 329cf685359d
 Step 3/19 : ENV USER=ghostfolio
- ---> Running in 87108c86d79c
-Removing intermediate container 87108c86d79c
- ---> c91f63451d08
+ ---> Using cache
+ ---> 2fa0092fb6bb
 Step 4/19 : ENV UID=1100
- ---> Running in 658b3cb88034
-Removing intermediate container 658b3cb88034
- ---> 5a7f2e83124c
+ ---> Using cache
+ ---> 19e537c5e3c7
 Step 5/19 : ENV GROUP=ghostfolio
- ---> Running in 86ee45a60634
-Removing intermediate container 86ee45a60634
- ---> fb6d7bef8edf
+ ---> Using cache
+ ---> 75893bd79ad7
 Step 6/19 : ENV GID=1100
- ---> Running in 23008672d879
-Removing intermediate container 23008672d879
- ---> 30499a5f9eff
+ ---> Using cache
+ ---> 969e274db440
 Step 7/19 : RUN addgroup -g "$GID" "$GROUP"
- ---> Running in e3a5e78b2f9c
-Removing intermediate container e3a5e78b2f9c
- ---> d73617746447
+ ---> Using cache
+ ---> 4b0b99b46869
 Step 8/19 : WORKDIR /ghostfolio/tmp
- ---> Running in ea53b6d52c1a
-Removing intermediate container ea53b6d52c1a
- ---> ade287f8f778
+ ---> Using cache
+ ---> d7e7a4bf7cea
 Step 9/19 : WORKDIR /.cache
- ---> Running in 6c6444747cd3
-Removing intermediate container 6c6444747cd3
- ---> fd350ac88e10
+ ---> Using cache
+ ---> 9719bb43270c
 Step 10/19 : RUN adduser     --disabled-password     --gecos ""     --home "/ghostfolio/tmp"     --ingroup "$GROUP"     --no-create-home     --uid "$UID"     "$USER"
- ---> Running in a03cd11cb5c6
-Removing intermediate container a03cd11cb5c6
- ---> bdd760cabf08
+ ---> Using cache
+ ---> d8cdb5af3337
 Step 11/19 : RUN chown "$USER":"$GROUP" -vR /ghostfolio /.cache
- ---> Running in dfc290154737
-changed ownership of '/ghostfolio/tmp' to 1100:1100
-changed ownership of '/ghostfolio' to 1100:1100
-changed ownership of '/.cache' to 1100:1100
-Removing intermediate container dfc290154737
- ---> 1cb28296f628
+ ---> Using cache
+ ---> 00d8fbb4b2a1
 Step 12/19 : USER "$USER"
- ---> Running in 9e5ce012068d
-Removing intermediate container 9e5ce012068d
- ---> 52ff6e517e04
+ ---> Using cache
+ ---> 3116c782d45d
 Step 13/19 : WORKDIR /scripts
- ---> Running in dfba339b26e2
-Removing intermediate container dfba339b26e2
- ---> dd852c617a6d
+ ---> Using cache
+ ---> 5d6091363273
 Step 14/19 : COPY --chown="$USER":"$GROUP" scripts/* ./
- ---> 11f1ff08f6eb
+ ---> e2dd30615318
 Step 15/19 : RUN chmod +x *.sh
- ---> Running in 4bee62ff86f9
-Removing intermediate container 4bee62ff86f9
- ---> 3bfc94996c94
+ ---> Running in cd2172d285fe
+Removing intermediate container cd2172d285fe
+ ---> 0b2590745e8d
 Step 16/19 : WORKDIR /ghostfolio
- ---> Running in bcd260fb26ac
-Removing intermediate container bcd260fb26ac
- ---> 615e770c0120
+ ---> Running in 01f10ffb6399
+Removing intermediate container 01f10ffb6399
+ ---> 81a11c2369f5
 Step 17/19 : ENTRYPOINT
- ---> Running in b2ea1a226ba0
-Removing intermediate container b2ea1a226ba0
- ---> 7a42662604de
+ ---> Running in 74615d3d1b1e
+Removing intermediate container 74615d3d1b1e
+ ---> 1456ffa4dfeb
 Step 18/19 : CMD ["echo", "Nothing to run here."]
- ---> Running in 82ea8c63ec5e
-Removing intermediate container 82ea8c63ec5e
- ---> 1636ca021b97
+ ---> Running in 8e8fd9bf83d4
+Removing intermediate container 8e8fd9bf83d4
+ ---> 4e24220aff95
 Step 19/19 : VOLUME ["/ghostfolio"]
- ---> Running in f0d3ff433a00
-Removing intermediate container f0d3ff433a00
- ---> 4984d7ab89cf
-Successfully built 4984d7ab89cf
+ ---> Running in f94b8dcb69d4
+Removing intermediate container f94b8dcb69d4
+ ---> 21c6aec603bb
+Successfully built 21c6aec603bb
 Successfully tagged ghostfolio-base:latest
 ```
 
@@ -198,10 +163,14 @@ Successfully tagged ghostfolio-base:latest
 
 ```vb
 rancher@burmilla:/mnt/containers/ghostfolio-docker$ docker-compose run --rm base /scripts/install.sh
-Creating volume "ghostfolio_ghostfolio-data" with local driver
 Creating volume "ghostfolio_postgres-data" with default driver
 Creating volume "ghostfolio_redis-data" with default driver
 Creating ghostfolio_base_run ... done
+Connecting to api.github.com (140.82.121.6:443)
+Connecting to codeload.github.com (140.82.121.9:443)
+writing to stdout
+-                    100% |************************************************************************************************|  765k  0:00:00 ETA
+written to stdout
 yarn install v1.22.5
 [1/5] Validating package.json...
 [2/5] Resolving packages...
@@ -292,7 +261,7 @@ $ prisma generate && ngcc --properties es2015 browser module main
 Environment variables loaded from .env
 Prisma schema loaded from prisma/schema.prisma
 
-✔ Generated Prisma Client (2.30.2) to ./node_modules/@prisma/client in 4.68s
+✔ Generated Prisma Client (2.30.2) to ./node_modules/@prisma/client in 2.25s
 You can now start using Prisma Client in your code. Reference: https://pris.ly/d/client
 
 import { PrismaClient } from '@prisma/client'
@@ -305,13 +274,12 @@ Compiling @angular/compiler/testing : es2015 as esm2015
 Compiling @nrwl/angular/testing : es2015 as esm2015
 Compiling @angular/animations : main as umd
 Compiling @angular/cdk/keycodes : main as umd
-Compiling @angular/compiler/testing : main as umd
 Compiling @nrwl/angular/testing : main as umd
-Compiling @angular/cdk/observers : es2015 as esm2015
+Compiling @angular/compiler/testing : main as umd
 Compiling @angular/animations/browser : es2015 as esm2015
+Compiling @angular/cdk/observers : es2015 as esm2015
 Compiling @angular/common : es2015 as esm2015
 Compiling @angular/cdk/collections : es2015 as esm2015
-Compiling @angular/core/testing : es2015 as esm2015
 Compiling @angular/cdk/platform : es2015 as esm2015
 Compiling @angular/cdk/bidi : es2015 as esm2015
 Compiling @angular/platform-browser : es2015 as esm2015
@@ -320,24 +288,25 @@ Compiling @angular/forms : es2015 as esm2015
 Compiling @angular/platform-browser/animations : es2015 as esm2015
 Compiling @angular/cdk/scrolling : es2015 as esm2015
 Compiling @angular/cdk/portal : es2015 as esm2015
-Compiling @angular/material/core : es2015 as esm2015
 Compiling @angular/cdk/layout : es2015 as esm2015
 Compiling @angular/cdk/overlay : es2015 as esm2015
 Compiling @angular/common/http : es2015 as esm2015
+Compiling @angular/material/core : es2015 as esm2015
 Compiling @angular/cdk/text-field : es2015 as esm2015
+Compiling @angular/cdk/accordion : es2015 as esm2015
+Compiling @angular/cdk/stepper : es2015 as esm2015
 Compiling @angular/material/form-field : es2015 as esm2015
 Compiling @angular/material/button : es2015 as esm2015
 Compiling @angular/material/icon : es2015 as esm2015
 Compiling @angular/material/tooltip : es2015 as esm2015
 Compiling @angular/material/select : es2015 as esm2015
 Compiling @angular/material/input : es2015 as esm2015
-Compiling @angular/cdk/accordion : es2015 as esm2015
 Compiling @angular/material/divider : es2015 as esm2015
-Compiling @angular/cdk/stepper : es2015 as esm2015
 Compiling @angular/cdk/table : es2015 as esm2015
-Compiling @angular/material/paginator : es2015 as esm2015
 Compiling @angular/material/sort : es2015 as esm2015
+Compiling @angular/material/paginator : es2015 as esm2015
 Compiling @angular/cdk/tree : es2015 as esm2015
+Compiling @angular/core/testing : es2015 as esm2015
 Compiling @angular/platform-browser-dynamic : es2015 as esm2015
 Compiling @angular/platform-browser/testing : es2015 as esm2015
 Compiling @angular/common/testing : es2015 as esm2015
@@ -351,8 +320,8 @@ Compiling @angular/material/autocomplete : es2015 as esm2015
 Compiling @angular/material/badge : es2015 as esm2015
 Compiling @angular/material/bottom-sheet : es2015 as esm2015
 Compiling @angular/material/button-toggle : es2015 as esm2015
-Compiling @angular/material/card : es2015 as esm2015
 Compiling @angular/material/checkbox : es2015 as esm2015
+Compiling @angular/material/card : es2015 as esm2015
 Compiling @angular/material/chips : es2015 as esm2015
 Compiling @angular/material/datepicker : es2015 as esm2015
 Compiling @angular/material/dialog : es2015 as esm2015
@@ -381,8 +350,8 @@ Compiling ngx-stripe : es2015 as esm2015
 Compiling @angular/animations/browser : main as umd
 Compiling @angular/animations/browser/testing : main as umd
 Compiling @angular/core : main as umd
-Compiling @angular/cdk/clipboard : main as umd
 Compiling @angular/common : main as umd
+Compiling @angular/cdk/clipboard : main as umd
 Compiling @angular/cdk/platform : main as umd
 Compiling @angular/cdk/bidi : main as umd
 Compiling @angular/cdk/collections : main as umd
@@ -399,9 +368,9 @@ Compiling @angular/material/core : main as umd
 Compiling @angular/cdk/portal : main as umd
 Compiling @angular/cdk/overlay : main as umd
 Compiling @angular/material/form-field : main as umd
-Compiling @angular/material/autocomplete : main as umd
-Compiling @angular/material/badge : main as umd
 Compiling @angular/cdk/layout : main as umd
+Compiling @angular/material/badge : main as umd
+Compiling @angular/material/autocomplete : main as umd
 Compiling @angular/material/bottom-sheet : main as umd
 Compiling @angular/material/button-toggle : main as umd
 Compiling @angular/material/card : main as umd
@@ -416,8 +385,8 @@ Compiling @angular/cdk/accordion : main as umd
 Compiling @angular/material/expansion : main as umd
 Compiling @angular/material/grid-list : main as umd
 Compiling @angular/material/icon : main as umd
-Compiling @angular/material/divider : main as umd
 Compiling @angular/material/icon/testing : main as umd
+Compiling @angular/material/divider : main as umd
 Compiling @angular/material/list : main as umd
 Compiling @angular/material/menu : main as umd
 Compiling @angular/material/progress-bar : main as umd
@@ -429,8 +398,8 @@ Compiling @angular/material/slider : main as umd
 Compiling @angular/material/snack-bar : main as umd
 Compiling @angular/cdk/stepper : main as umd
 Compiling @angular/material/stepper : main as umd
-Compiling @angular/cdk/table : main as umd
 Compiling @angular/material/select : main as umd
+Compiling @angular/cdk/table : main as umd
 Compiling @angular/material/tooltip : main as umd
 Compiling @angular/material/paginator : main as umd
 Compiling @angular/material/sort : main as umd
@@ -438,21 +407,20 @@ Compiling @angular/material/table : main as umd
 Compiling @angular/material/tabs : main as umd
 Compiling @angular/material/toolbar : main as umd
 Compiling @angular/cdk/tree : main as umd
-Compiling @angular/core/testing : main as umd
-Compiling @angular/platform-browser-dynamic : main as umd
 Compiling @angular/material/tree : main as umd
+Compiling @angular/platform-browser-dynamic : main as umd
+Compiling @angular/core/testing : main as umd
 Compiling @angular/platform-browser/testing : main as umd
 Compiling @angular/platform-browser-dynamic/testing : main as umd
 Compiling @angular/common/testing : main as umd
 Compiling @angular/router/testing : main as umd
-Compiling @angular/router : main as umd
 Compiling angular-material-css-vars : main as umd
+Compiling @angular/router : main as umd
+Compiling ngx-device-detector : main as umd
 Compiling ngx-skeleton-loader : module as esm5
 Compiling ngx-skeleton-loader : main as umd
 Compiling ngx-stripe : main as umd
-Compiling ngx-device-detector : main as umd
-Done in 562.95s.
-rancher@burmilla:/mnt/containers/ghostfolio-docker$
+Done in 734.24s.
 ```
 
 </details>
@@ -464,23 +432,6 @@ It will start postgres, wait for it to be ready, then execute the ghostfolio db 
 ```vb
 rancher@burmilla:/mnt/containers/ghostfolio-docker$ docker-compose up -d postgres && docker-compose run --rm base /scripts/setup-database.sh && docker-compose stop postgres
 Building with native build. Learn about native build in Compose here: https://docs.docker.com/go/compose-native-build/
-Pulling postgres (postgres:12)...
-12: Pulling from library/postgres
-bd897bb914af: Pull complete
-7f145551e8b9: Pull complete
-d21bf1caa4a5: Pull complete
-7d593d17cf79: Pull complete
-c468fd1ea184: Pull complete
-cd96a2d4842d: Pull complete
-12fbbf9d6306: Pull complete
-59e3d6202528: Pull complete
-871f7b88dc7d: Pull complete
-29d6e32df57f: Pull complete
-05ad30c56485: Pull complete
-9c60ffbf7e74: Pull complete
-d3499f1cf906: Pull complete
-Digest: sha256:690e46a2dbedb948b8f347a0404c9e3e143fbe9bb12d04bfb84aec982eee4221
-Status: Downloaded newer image for postgres:12
 Creating ghostfolio_postgres_1 ... done
 Creating ghostfolio_base_run ... done
 curl: (52) Empty reply from server
@@ -491,10 +442,16 @@ Environment variables loaded from .env
 Prisma schema loaded from prisma/schema.prisma
 Datasource "db": PostgreSQL database "ghostfolio-db", schema "public" at "postgres:5432"
 
-🚀  Your database is now in sync with your schema. Done in 19.49s
+🚀  Your database is now in sync with your schema. Done in 21.55s
 
-✔ Generated Prisma Client (2.30.2) to ./node_modules/@prisma/client in 6.31s
+✔ Generated Prisma Client (2.30.2) to ./node_modules/@prisma/client in 915ms
 
+┌─────────────────────────────────────────────────────────┐
+│  Update available 2.30.2 -> 3.2.0                       │
+│  Run the following to update                            │
+│    yarn add --dev prisma                                │
+│    yarn add @prisma/client                              │
+└─────────────────────────────────────────────────────────┘
 $ prisma db seed --preview-feature
 Environment variables loaded from .env
 Prisma schema loaded from prisma/schema.prisma
@@ -539,34 +496,28 @@ Running seed: ts-node --compiler-options '{"module":"CommonJS"}' "prisma/seed.ts
     accessToken: 'c689bcc894e4a420cb609ee34271f3e07f200594f7d199c50d75add7102889eb60061a04cd2792ebc853c54e37308271271e7bf588657c9e0c37faacbc28c3c6',
     alias: 'Admin',
     authChallenge: null,
-    createdAt: 2021-10-05T18:44:44.574Z,
+    createdAt: 2021-10-05T22:37:58.350Z,
     id: '4e1af723-95f6-44f8-92a7-464df17f6ec3',
     provider: null,
     role: 'ADMIN',
     thirdPartyId: null,
-    updatedAt: 2021-10-05T18:44:44.575Z
+    updatedAt: 2021-10-05T22:37:58.352Z
   },
   userDemo: {
     accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjliMTEyYjRkLTNiN2QtNGJhZC05YmRkLTNiMGY3YjRkYWMyZiIsImlhdCI6MTYxODUxMjAxNCwiZXhwIjoxNjIxMTA0MDE0fQ.l3WUxpI0hxuQtdPrD0kd7sem6S2kx_7CrdNvkmlKuWw',
     alias: 'Demo',
     authChallenge: null,
-    createdAt: 2021-10-05T18:44:46.107Z,
+    createdAt: 2021-10-05T22:37:58.576Z,
     id: '9b112b4d-3b7d-4bad-9bdd-3b0f7b4dac2f',
     provider: null,
     role: 'DEMO',
     thirdPartyId: null,
-    updatedAt: 2021-10-05T18:44:46.109Z
+    updatedAt: 2021-10-05T22:37:58.578Z
   }
 }
 
 🌱  Your database has been seeded.
-┌─────────────────────────────────────────────────────────┐
-│  Update available 2.30.2 -> 3.2.0                       │
-│  Run the following to update                            │
-│    yarn add --dev prisma                                │
-│    yarn add @prisma/client                              │
-└─────────────────────────────────────────────────────────┘
-Done in 99.59s.
+Done in 124.89s.
 Login as Admin with the following Security Token: ae76872ae8f3419c6d6f64bf51888ecbcc703927a342d815fafe486acdb938da07d0cf44fca211a0be74a423238f535362d390a41e81e633a9ce668a6e31cdf9
 Go to the Admin Control Panel and click Gather All Data to fetch historical data
 Click Sign out and check out the Live Demo
@@ -577,46 +528,95 @@ Stopping ghostfolio_postgres_1 ... done
 </details>
 
 <details>
-<summary> 5. At this point, ghostfolio is ready to go and you can start it as usual using <code>docker-compose up -d</code> and, after a while, you'll be able to reach ghostfolio app @ http://yourdockerhost:4200 .
+<summary> 5. At this point, ghostfolio is ready to go and you can start it as usual using <code>docker-compose up -d</code> and, after a good while, you'll be able to reach ghostfolio app @ http://yourdockerhost:4200 .
 </summary><p>If you want to monitor the startup sequence you can run <code>docker-compose logs -f</code>
 
 ```vb
-rancher@burmilla:/mnt/containers/ghostfolio-docker$ docker-compose up -d
-Building with native build. Learn about native build in Compose here: https://docs.docker.com/go/compose-native-build/
-Creating ghostfolio_base_1     ... done
-Creating ghostfolio_postgres_1 ... done
-Creating ghostfolio_redis_1    ... done
-Creating ghostfolio_server_1   ... done
-Creating ghostfolio_client_1   ... done
 rancher@burmilla:/mnt/containers/ghostfolio-docker$ docker-compose logs -f
-Attaching to ghostfolio_client_1, ghostfolio_server_1, ghostfolio_base_1, ghostfolio_postgres_1, ghostfolio_redis_1
-base_1      | Nothing to run here.
-ghostfolio_base_1 exited with code 0
-redis_1     | 1:C 05 Oct 2021 19:41:26.119 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
-redis_1     | 1:C 05 Oct 2021 19:41:26.119 # Redis version=6.2.5, bits=64, commit=00000000, modified=0, pid=1, just started
-redis_1     | 1:C 05 Oct 2021 19:41:26.119 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
-redis_1     | 1:M 05 Oct 2021 19:41:26.120 * monotonic clock: POSIX clock_gettime
-redis_1     | 1:M 05 Oct 2021 19:41:26.121 * Running mode=standalone, port=6379.
-redis_1     | 1:M 05 Oct 2021 19:41:26.121 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
-redis_1     | 1:M 05 Oct 2021 19:41:26.121 # Server initialized
-redis_1     | 1:M 05 Oct 2021 19:41:26.121 * Loading RDB produced by version 6.2.5
-redis_1     | 1:M 05 Oct 2021 19:41:26.122 * RDB age 65 seconds
-redis_1     | 1:M 05 Oct 2021 19:41:26.122 * RDB memory usage when created 0.77 Mb
-redis_1     | 1:M 05 Oct 2021 19:41:26.122 * DB loaded from disk: 0.000 seconds
-redis_1     | 1:M 05 Oct 2021 19:41:26.122 * Ready to accept connections
+Attaching to ghostfolio_client_1, ghostfolio_server_1, ghostfolio_base_1, ghostfolio_redis_1, ghostfolio_postgres_1
+redis_1     | 1:C 06 Oct 2021 18:00:45.253 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+redis_1     | 1:C 06 Oct 2021 18:00:45.254 # Redis version=6.2.5, bits=64, commit=00000000, modified=0, pid=1, just started
+redis_1     | 1:C 06 Oct 2021 18:00:45.254 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+redis_1     | 1:M 06 Oct 2021 18:00:45.255 * monotonic clock: POSIX clock_gettime
+redis_1     | 1:M 06 Oct 2021 18:00:45.256 * Running mode=standalone, port=6379.
+redis_1     | 1:M 06 Oct 2021 18:00:45.257 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+redis_1     | 1:M 06 Oct 2021 18:00:45.257 # Server initialized
+redis_1     | 1:M 06 Oct 2021 18:00:45.258 * Ready to accept connections
+postgres_1  | The files belonging to this database system will be owned by user "postgres".
+postgres_1  | This user must also own the server process.
+postgres_1  |
+postgres_1  | The database cluster will be initialized with locale "en_US.utf8".
+postgres_1  | The default database encoding has accordingly been set to "UTF8".
+postgres_1  | The default text search configuration will be set to "english".
+postgres_1  |
+postgres_1  | Data page checksums are disabled.
+postgres_1  |
+postgres_1  | fixing permissions on existing directory /var/lib/postgresql/data ... ok
+postgres_1  | creating subdirectories ... ok
+postgres_1  | selecting dynamic shared memory implementation ... posix
+postgres_1  | selecting default max_connections ... 100
+postgres_1  | selecting default shared_buffers ... 128MB
+postgres_1  | selecting default time zone ... Etc/UTC
+postgres_1  | creating configuration files ... ok
+postgres_1  | running bootstrap script ... ok
+postgres_1  | performing post-bootstrap initialization ... ok
+postgres_1  | syncing data to disk ... ok
+postgres_1  |
+postgres_1  | initdb: warning: enabling "trust" authentication for local connections
+postgres_1  | You can change this by editing pg_hba.conf or using the option -A, or
+postgres_1  | --auth-local and --auth-host, the next time you run initdb.
+postgres_1  |
+postgres_1  | Success. You can now start the database server using:
+postgres_1  |
+postgres_1  |     pg_ctl -D /var/lib/postgresql/data -l logfile start
+postgres_1  |
+postgres_1  | waiting for server to start....2021-10-05 22:34:18.615 UTC [46] LOG:  starting PostgreSQL 12.8 (Debian 12.8-1.pgdg110+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 10.2.1-6) 10.2.1 20210110, 64-bit
+postgres_1  | 2021-10-05 22:34:18.944 UTC [46] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres_1  | .....2021-10-05 22:34:23.639 UTC [47] LOG:  database system was shut down at 2021-10-05 22:32:58 UTC
+postgres_1  | .......2021-10-05 22:34:30.970 UTC [46] LOG:  database system is ready to accept connections
+postgres_1  |  done
+postgres_1  | server started
+postgres_1  | CREATE DATABASE
+postgres_1  |
+postgres_1  |
+postgres_1  | /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+postgres_1  |
+postgres_1  | 2021-10-05 22:35:46.169 UTC [46] LOG:  received fast shutdown request
+postgres_1  | waiting for server to shut down....2021-10-05 22:35:46.309 UTC [46] LOG:  aborting any active transactions
+postgres_1  | 2021-10-05 22:35:46.312 UTC [46] LOG:  background worker "logical replication launcher" (PID 53) exited with exit code 1
+postgres_1  | 2021-10-05 22:35:46.314 UTC [48] LOG:  shutting down
+postgres_1  | .....2021-10-05 22:35:52.053 UTC [46] LOG:  database system is shut down
+postgres_1  |  done
+postgres_1  | 2021-10-05 22:35:52.286 UTC [1] LOG:  starting PostgreSQL 12.8 (Debian 12.8-1.pgdg110+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 10.2.1-6) 10.2.1 20210110, 64-bit
+postgres_1  | 2021-10-05 22:35:52.286 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+postgres_1  | 2021-10-05 22:35:52.286 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+postgres_1  | server stopped
+postgres_1  |
+postgres_1  | PostgreSQL init process complete; ready for start up.
+postgres_1  |
+postgres_1  | 2021-10-05 22:35:52.744 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres_1  | 2021-10-05 22:35:56.287 UTC [75] LOG:  database system was shut down at 2021-10-05 22:35:51 UTC
+postgres_1  | 2021-10-05 22:35:56.287 UTC [76] LOG:  invalid length of startup packet
+postgres_1  | 2021-10-05 22:35:56.498 UTC [1] LOG:  database system is ready to accept connections
+postgres_1  | 2021-10-05 22:36:14.860 UTC [83] LOG:  could not receive data from client: Connection reset by peer
+postgres_1  | 2021-10-05 22:38:17.574 UTC [1] LOG:  received fast shutdown request
+postgres_1  | 2021-10-05 22:38:17.729 UTC [1] LOG:  aborting any active transactions
+postgres_1  | 2021-10-05 22:38:17.732 UTC [1] LOG:  background worker "logical replication launcher" (PID 82) exited with exit code 1
+postgres_1  | 2021-10-05 22:38:17.734 UTC [77] LOG:  shutting down
 postgres_1  |
 postgres_1  | PostgreSQL Database directory appears to contain a database; Skipping initialization
 postgres_1  |
-postgres_1  | 2021-10-05 19:41:33.706 UTC [1] LOG:  starting PostgreSQL 12.8 (Debian 12.8-1.pgdg110+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 10.2.1-6) 10.2.1 20210110, 64-bit
-postgres_1  | 2021-10-05 19:41:33.717 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
-postgres_1  | 2021-10-05 19:41:33.718 UTC [1] LOG:  listening on IPv6 address "::", port 5432
-postgres_1  | 2021-10-05 19:41:44.469 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
-postgres_1  | 2021-10-05 19:41:45.673 UTC [25] LOG:  database system was shut down at 2021-10-05 19:40:22 UTC
-postgres_1  | 2021-10-05 19:41:45.803 UTC [1] LOG:  database system is ready to accept connections
-client_1    | yarn run v1.22.5
-client_1    | $ ng serve client --disable-host-check --host 0.0.0.0
-client_1    | Warning: Running a server with --disable-host-check is a security risk. See https://medium.com/webpack/webpack-dev-server-middleware-security-issues-1489d950874a for more information.
-client_1    | - Generating browser application bundles (phase: setup)...
+postgres_1  | 2021-10-06 18:00:48.812 UTC [1] LOG:  starting PostgreSQL 12.8 (Debian 12.8-1.pgdg110+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 10.2.1-6) 10.2.1 20210110, 64-bit
+postgres_1  | 2021-10-06 18:00:48.824 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+postgres_1  | 2021-10-06 18:00:48.824 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+postgres_1  | 2021-10-06 18:00:49.015 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres_1  | 2021-10-06 18:00:49.422 UTC [25] LOG:  database system shutdown was interrupted; last known up at 2021-10-05 22:38:17 UTC
+postgres_1  | 2021-10-06 18:00:50.164 UTC [25] LOG:  database system was not properly shut down; automatic recovery in progress
+postgres_1  | 2021-10-06 18:00:50.264 UTC [25] LOG:  redo starts at 0/164E6F8
+postgres_1  | 2021-10-06 18:00:50.478 UTC [25] LOG:  invalid record length at 0/16B9A58: wanted 24, got 0
+postgres_1  | 2021-10-06 18:00:50.478 UTC [25] LOG:  redo done at 0/16B9A30
+postgres_1  | 2021-10-06 18:00:58.969 UTC [1] LOG:  database system is ready to accept connections
+base_1      | Nothing to run here.
 server_1    | yarn run v1.22.5
 server_1    | $ nx serve api
 server_1    |
@@ -632,109 +632,117 @@ server_1    |
 server_1    | >  NX  Falling back to webpack 4 due to incompatible plugin versions
 server_1    |
 server_1    | Hash: ed1d775da9dd7eea6685
-server_1    | Built at: 10/05/2021 7:42:44 PM
+server_1    | Built at: 10/06/2021 6:01:38 PM
 server_1    | Entrypoint main [big] = main.js main.js.map
 server_1    | chunk {main} main.js, main.js.map (main) 300 KiB [entry] [rendered]
 server_1    | Issues checking in progress...
-server_1    | Debugger listening on ws://localhost:9229/fa7cc29e-3d4d-4d45-be14-7f11a9e7dd31
+server_1    | Debugger listening on ws://localhost:9229/8c56ce70-e232-499e-9b67-ee55db58320a
 server_1    | For help, see: https://nodejs.org/en/docs/inspector
 server_1    | No issues found.
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [NestFactory] Starting Nest application...
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] ConfigurationModule dependencies initialized +572ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] PrismaModule dependencies initialized +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] JwtModule dependencies initialized +49ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] JwtModule dependencies initialized +0ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] DiscoveryModule dependencies initialized +3ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] ConfigHostModule dependencies initialized +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] ImpersonationModule dependencies initialized +4ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] ServeStaticModule dependencies initialized +3ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] ScheduleModule dependencies initialized +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] DataProviderModule dependencies initialized +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] ConfigModule dependencies initialized +3ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:03 PM   [InstanceLoader] ConfigModule dependencies initialized +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] ExchangeRateDataModule dependencies initialized +193ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] SubscriptionModule dependencies initialized +14ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] AccessModule dependencies initialized +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] AuthDeviceModule dependencies initialized +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] CacheModule dependencies initialized +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] DataGatheringModule dependencies initialized +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] ExportModule dependencies initialized +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] UserModule dependencies initialized +3ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] RedisCacheModule dependencies initialized +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] InfoModule dependencies initialized +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] SymbolModule dependencies initialized +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] AuthModule dependencies initialized +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] ExperimentalModule dependencies initialized +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] AccountModule dependencies initialized +6ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] CacheModule dependencies initialized +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] AppModule dependencies initialized +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] AdminModule dependencies initialized +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] OrderModule dependencies initialized +3ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] ImportModule dependencies initialized +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [InstanceLoader] PortfolioModule dependencies initialized +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] AppController {/api}: +111ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] AdminController {/api/admin}: +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/admin, GET} route +3ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/admin/gather/max, POST} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/admin/gather/profile-data, POST} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] SubscriptionController {/api/subscription}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/subscription/stripe/callback, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/subscription/stripe/checkout-session, POST} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] AccessController {/api/access}: +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/access, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] AccountController {/api/account}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/account/:id, DELETE} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/account, GET} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/account/:id, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/account, POST} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/account/:id, PUT} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] UserController {/api/user}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/user/:id, DELETE} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/user, GET} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/user, POST} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/user/setting, PUT} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/user/settings, PUT} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] AuthDeviceController {/api/auth-device}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/auth-device/:id, DELETE} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] AuthController {/api/auth}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/auth/anonymous/:accessToken, GET} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/auth/google, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/auth/google/callback, GET} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/auth/webauthn/generate-registration-options, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/auth/webauthn/verify-attestation, POST} route +3ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/auth/webauthn/generate-assertion-options, POST} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/auth/webauthn/verify-assertion, POST} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] CacheController {/api/cache}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/cache/flush, POST} route +3ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] ExperimentalController {/api/experimental}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/experimental/benchmarks, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/experimental/benchmarks/:symbol, GET} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] ExportController {/api/export}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/export, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] ImportController {/api/import}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/import, POST} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] InfoController {/api/info}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/info, GET} route +6ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] OrderController {/api/order}: +0ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/order/:id, DELETE} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/order, GET} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/order/:id, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/order, POST} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/order/:id, PUT} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] PortfolioController {/api/portfolio}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/portfolio/investments, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/portfolio/chart, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/portfolio/details, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/portfolio/performance, GET} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/portfolio/positions, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/portfolio/summary, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/portfolio/position/:symbol, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/portfolio/report, GET} route +2ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RoutesResolver] SymbolController {/api/symbol}: +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/symbol/lookup, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:04 PM   [RouterExplorer] Mapped {/api/symbol/:dataSource/:symbol, GET} route +1ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:05 PM   [NestApplication] Nest application successfully started +1279ms
-server_1    | [Nest] 53   - 10/05/2021, 7:43:05 PM   Listening at http://localhost:3333 +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:11 PM   [NestFactory] Starting Nest application...
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ConfigurationModule dependencies initialized +790ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] PrismaModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] JwtModule dependencies initialized +93ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] JwtModule dependencies initialized +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] DiscoveryModule dependencies initialized +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ConfigHostModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ImpersonationModule dependencies initialized +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ServeStaticModule dependencies initialized +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ScheduleModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] DataProviderModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ConfigModule dependencies initialized +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ConfigModule dependencies initialized +0ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ExchangeRateDataModule dependencies initialized +248ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] SubscriptionModule dependencies initialized +15ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] AccessModule dependencies initialized +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] AuthDeviceModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] CacheModule dependencies initialized +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] DataGatheringModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ExportModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] UserModule dependencies initialized +3ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] RedisCacheModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] InfoModule dependencies initialized +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] SymbolModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] AuthModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ExperimentalModule dependencies initialized +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] AccountModule dependencies initialized +6ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] CacheModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] AppModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] AdminModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] OrderModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] ImportModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [InstanceLoader] PortfolioModule dependencies initialized +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] AppController {/api}: +276ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] AdminController {/api/admin}: +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/admin, GET} route +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/admin/gather/max, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/admin/gather/profile-data, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] SubscriptionController {/api/subscription}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/subscription/stripe/callback, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/subscription/stripe/checkout-session, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] AccessController {/api/access}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/access, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] AccountController {/api/account}: +0ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/account/:id, DELETE} route +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/account, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/account/:id, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/account, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/account/:id, PUT} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] UserController {/api/user}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/user/:id, DELETE} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/user, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/user, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/user/setting, PUT} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/user/settings, PUT} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] AuthDeviceController {/api/auth-device}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/auth-device/:id, DELETE} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] AuthController {/api/auth}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/auth/anonymous/:accessToken, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/auth/google, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/auth/google/callback, GET} route +0ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/auth/webauthn/generate-registration-options, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/auth/webauthn/verify-attestation, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/auth/webauthn/generate-assertion-options, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/auth/webauthn/verify-assertion, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] CacheController {/api/cache}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/cache/flush, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] ExperimentalController {/api/experimental}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/experimental/benchmarks, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/experimental/benchmarks/:symbol, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] ExportController {/api/export}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/export, GET} route +2ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] ImportController {/api/import}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/import, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] InfoController {/api/info}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/info, GET} route +5ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] OrderController {/api/order}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/order/:id, DELETE} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/order, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/order/:id, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/order, POST} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/order/:id, PUT} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] PortfolioController {/api/portfolio}: +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/portfolio/investments, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/portfolio/chart, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/portfolio/details, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/portfolio/performance, GET} route +0ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/portfolio/positions, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/portfolio/summary, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/portfolio/position/:symbol, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/portfolio/report, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RoutesResolver] SymbolController {/api/symbol}: +0ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/symbol/lookup, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:12 PM   [RouterExplorer] Mapped {/api/symbol/:dataSource/:symbol, GET} route +1ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:15 PM   [NestApplication] Nest application successfully started +2274ms
+server_1    | [Nest] 53   - 10/06/2021, 6:03:15 PM   Listening at http://localhost:3333 +2ms
+server_1    | 7d data gathering has been started.
+server_1    | 7d data gathering has been completed.
+server_1    | data-gathering-7d: 9.863s
+ghostfolio_base_1 exited with code 0
+client_1    | yarn run v1.22.5
+client_1    | $ ng serve client --disable-host-check --host 0.0.0.0
+client_1    | Warning: Running a server with --disable-host-check is a security risk. See https://medium.com/webpack/webpack-dev-server-middleware-security-issues-1489d950874a for more information.
+client_1    | - Generating browser application bundles (phase: setup)...
 client_1    | ✔ Browser application bundle generation complete.
 client_1    |
 client_1    | Initial Chunk Files                                                                                     | Names         |      Size
@@ -780,26 +788,29 @@ client_1    | apps_client_src_app_pages_webauthn_webauthn-page_module_ts.js     
 client_1    | apps_client_src_app_pages_auth_auth-page_module_ts.js                                                   | -             |   7.58 kB
 client_1    | common.js                                                                                               | common        |   2.72 kB
 client_1    |
-client_1    | Build at: 2021-10-05T19:44:49.163Z - Hash: ef3beb6f1a807ebe0f49 - Time: 96169ms
-client_1    |
-client_1    | ** Angular Live Development Server is listening on 0.0.0.0:4200, open your browser on http://localhost:4200/ **
-client_1    |
+client_1    | Build at: 2021-10-06T18:04:25.788Z - Hash: 3e44b00dbc12982c08a7 - Time: 121953ms
 client_1    |
 client_1    | Warning: /ghostfolio/apps/client/src/app/adapter/custom-date-adapter.ts depends on 'date-fns/locale/de/index'. CommonJS or AMD dependencies can cause optimization bailouts.
-client_1    | For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
-client_1    |
-client_1    | Warning: /ghostfolio/apps/client/src/app/pages/home/home-page.component.ts depends on '@prisma/client'. CommonJS or AMD dependencies can cause optimization bailouts.
 client_1    | For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
 client_1    |
 client_1    | Warning: /ghostfolio/apps/client/src/app/services/user/user.service.ts depends on '@codewithdan/observable-store'. CommonJS or AMD dependencies can cause optimization bailouts.
 client_1    | For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
 client_1    |
+client_1    | Warning: /ghostfolio/libs/common/src/lib/config.ts depends on '@prisma/client'. CommonJS or AMD dependencies can cause optimization bailouts.
+client_1    | For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+client_1    |
 client_1    | Warning: /ghostfolio/libs/ui/src/lib/line-chart/line-chart.component.ts depends on '@ghostfolio/common/helper'. CommonJS or AMD dependencies can cause optimization bailouts.
+client_1    | For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+client_1    |
+client_1    | Warning: /ghostfolio/libs/ui/src/lib/portfolio-proportion-chart/portfolio-proportion-chart.component.ts depends on 'color'. CommonJS or AMD dependencies can cause optimization bailouts.
 client_1    | For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
 client_1    |
 client_1    | Warning: /ghostfolio/node_modules/svgmap/dist/svgMap.min.js depends on 'svg-pan-zoom'. CommonJS or AMD dependencies can cause optimization bailouts.
 client_1    | For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
 client_1    |
+client_1    |
+client_1    |
+client_1    | ** Angular Live Development Server is listening on 0.0.0.0:4200, open your browser on http://localhost:4200/ **
 client_1    |
 client_1    |
 client_1    | ✔ Compiled successfully.
