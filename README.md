@@ -25,7 +25,6 @@ Some notes about my choices, in case you were wondering:
 
 - The ghostfolio-base container will not run, it will start then stop. This is normal, it's used as a base to run the setup scripts (steps 3 and 4). It could be replaced with a longer docker run command including all the volume mappings needed, but I find it cleaner cleaner having everything in a compose file 
 - The base, server and client containers could probably be distributed as docker images. Maybe in the future, if the official team will not release an official image
-- The compose file uses a local directory for ghostfolio-data instead of using a standard volume: this way it is easier to edit/patch/check files in case of errors. If you want to use a standard volume instead, you can edit the docker-compose.yml file removing the driver* sections
 - This project is developed and tested on [BurmillaOS](https://burmillaos.org/)
 - The default UID and GID are 1100:1100
 
@@ -35,8 +34,6 @@ You can set it up following these steps:
 
 <details>
 <summary> 1. <code>git clone</code> this repo in a folder of your choice inside your docker host.</summary><p>
-
-Besides getting all the files you'll end up with a *ghostfolio-data* directory that will be used to store ghostfolio application files.
 
 ```vb
 rancher@burmilla:/mnt/containers$ git clone https://github.com/psychowood/ghostfolio-docker
@@ -54,7 +51,6 @@ drwxr-xr-x 1 rancher rancher   882 Sep 27 17:05 ..
 -rw-r--r-- 1 rancher rancher  1544 Oct  2 09:53 docker-compose.yml
 -rw-r--r-- 1 rancher rancher   613 Oct  2 09:53 Dockerfile
 -rw-r--r-- 1 rancher rancher   352 Oct  2 09:53 .env
-drwxr-xr-x 1 rancher rancher    20 Oct  2 09:53 ghostfolio-data
 drwxr-xr-x 1 rancher rancher   158 Oct  2 09:54 .git
 -rw-r--r-- 1 rancher rancher    66 Oct  2 09:53 .gitattributes
 -rw-r--r-- 1 rancher rancher    58 Oct  2 09:53 .gitignore
@@ -147,7 +143,7 @@ Successfully tagged ghostfolio-base:latest
   This will:
    - Pull the latest Ghostfolio [release](https://github.com/ghostfolio/ghostfolio/releases/latest) from its repo
    - Decompress it
-   - Run Yarn install and build ghostfolio *inside the ghostfolio-data folder*
+   - Run Yarn install and build ghostfolio *inside the ghostfolio-data volume*
    - Patch package.json with
        - `"start:client": "ng serve client --hmr -o"` → `start:client": "ng serve client --disable-host-check --host 0.0.0.0"` 
            - remove `--hmr` since hot module replacement is not needed 

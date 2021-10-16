@@ -48,10 +48,5 @@ services:
 
 volumes:
   ghostfolio-data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: './ghostfolio-data'
   postgres-data:
   redis-data:
