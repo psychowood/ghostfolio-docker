@@ -1,3 +1,26 @@
+> [!IMPORTANT]
+> Since now Ghostfolio ships with official [docker compose files](https://github.com/ghostfolio/ghostfolio#run-with-docker-compose), this repository is not needed anymore.
+> 
+> If you really want to run it without cloning the whole ghostfolio repo, you can exec:
+> ```shell
+> mkdir ghostfolio && cd ghostfolio
+> 
+> wget https://raw.githubusercontent.com/ghostfolio/ghostfolio/main/.env.example -q -O - | \
+> sed -e "s/<INSERT_REDIS_PASSWORD>/$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c32)/" | \
+> sed -e "s/<INSERT_POSTGRES_PASSWORD>/$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c32)/" | \
+> sed -e "s/<INSERT_RANDOM_STRING>/$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c32)/" | \
+> sed -e "s/<INSERT_RANDOM_STRING>/$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c32)/" > .env
+> 
+> wget https://raw.githubusercontent.com/ghostfolio/ghostfolio/main/docker/docker-compose.yml -q -O - | sed -e 's/\.\.\/\.env/.env/' > docker-compose.yml
+>
+> docker-compose up -d && docker-compose logs -f
+> 
+> ```
+> this will download the .env file, generate some random passwords, patch the docker-compose.yml file to use the local .env created with the previous command, and up ghostfolio.
+>
+> Enjoy, and thanks for all the fish!
+
+
 # ghostfolio-docker
 All-in-one ghostfolio setup in a docker environment
 
